@@ -55,6 +55,7 @@ h2{font-size:1.35rem;margin:0 0 4px}
 .chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:700}
 .chips .chip{flex:1;text-align:center}
 .chips-wrap .chip{flex:0 0 auto}
+#playerCount .chip{min-width:52px}
 
 /* QR */
 .qr-frame{

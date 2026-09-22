@@ -36,6 +36,7 @@ function decodeRound(hash) {
 
 const state = {
   topics: [],
+  config: { minPlayers: 3, maxPlayers: 8 },  // 會被 topics.json 的 config 覆寫
   round: null,        // 目前這一局
   setup: { players: 6, topicId: null },  // topicId = null 代表隨機
   seat: null,         // 玩家自己的座位號
@@ -69,8 +70,9 @@ function renderGrid(container, topic, highlightIndex) {
 /* ── Host：設定畫面 ─────────────────────────────────── */
 
 function renderSetup() {
+  const { minPlayers, maxPlayers } = state.config;
   const counts = $('#playerCount');
-  counts.innerHTML = [3, 4, 5, 6, 7, 8]
+  counts.innerHTML = Array.from({ length: maxPlayers - minPlayers + 1 }, (_, i) => minPlayers + i)
     .map((n) => `<button class="chip" data-count="${n}" aria-pressed="${n === state.setup.players}">${n}</button>`)
     .join('');
 
@@ -227,8 +229,10 @@ async function main() {
   wireEvents();
 
   try {
-    const res = await fetch('data/topics.json', { cache: 'no-cache' });
-    state.topics = (await res.json()).topics;
+    const data = await (await fetch('data/topics.json', { cache: 'no-cache' })).json();
+    state.topics = data.topics;
+    Object.assign(state.config, data.config || {});
+    state.setup.players = Math.min(Math.max(6, state.config.minPlayers), state.config.maxPlayers);
   } catch {
     $('#errMsg').textContent = '無法載入題庫（data/topics.json）。';
     return show('error');
