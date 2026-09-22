@@ -16,18 +16,22 @@ const b64url = {
   decode: (s) => atob(s.replace(/-/g, '+').replace(/_/g, '/')),
 };
 
-/* 一局 = 主題 / 秘密詞格子 / 變色龍座位 / 人數 / 起始玩家 / 亂數碼 */
+/* 一局 = 主題 / 秘密詞格子 / 變色龍座位(可多位，逗號分隔) / 人數 / 起始玩家 / 亂數碼 */
 function encodeRound(r) {
-  return b64url.encode([r.topicId, r.wordIndex, r.chameleonSeat, r.players, r.startSeat, r.nonce].join('|'));
+  return b64url.encode(
+    [r.topicId, r.wordIndex, r.chameleonSeats.join(','), r.players, r.startSeat, r.nonce].join('|'));
 }
 function decodeRound(hash) {
-  const [topicId, wordIndex, chameleonSeat, players, startSeat, nonce] = b64url.decode(hash).split('|');
+  const [topicId, wordIndex, seats, players, startSeat, nonce] = b64url.decode(hash).split('|');
   const r = {
     topicId,
-    wordIndex: +wordIndex, chameleonSeat: +chameleonSeat,
+    wordIndex: +wordIndex,
+    chameleonSeats: String(seats).split(',').map(Number),
     players: +players, startSeat: +startSeat, nonce,
   };
-  const ok = topicId && [r.wordIndex, r.chameleonSeat, r.players, r.startSeat].every(Number.isInteger);
+  const ok = topicId
+    && [r.wordIndex, r.players, r.startSeat].every(Number.isInteger)
+    && r.chameleonSeats.length > 0 && r.chameleonSeats.every(Number.isInteger);
   if (!ok) throw new Error('bad payload');
   return r;
 }
@@ -36,13 +40,15 @@ function decodeRound(hash) {
 
 const state = {
   topics: [],
-  config: { minPlayers: 3, maxPlayers: 8 },  // 會被 topics.json 的 config 覆寫
+  config: { minPlayers: 3, maxPlayers: 8, twoChameleonsFrom: 9 },  // 會被 topics.json 的 config 覆寫
   round: null,        // 目前這一局
-  setup: { players: 6, topicId: null },  // topicId = null 代表隨機
+  setup: { players: 6, topicId: null, chameleons: 1 },  // topicId = null 代表隨機
   seat: null,         // 玩家自己的座位號
 };
 
 const topicById = (id) => state.topics.find((t) => t.id === id);
+const chameleonCount = () => state.round.chameleonSeats.length;
+const isChameleonSeat = (seat) => state.round.chameleonSeats.includes(seat);
 
 /* ── 畫面切換 ───────────────────────────────────────── */
 
@@ -77,6 +83,19 @@ function renderSetup() {
     .map((n) => `<button class="chip" data-count="${n}" aria-pressed="${n === state.setup.players}">${n}</button>`)
     .join('');
 
+  // 人數夠多才開放「兩隻變色龍」，且非強制
+  const canTwo = state.setup.players >= state.config.twoChameleonsFrom;
+  if (!canTwo) state.setup.chameleons = 1;
+  $('#chameleonField').hidden = !canTwo;
+  if (canTwo) {
+    $('#chameleonCount').innerHTML = [1, 2]
+      .map((n) => `<button class="chip" data-cham="${n}" aria-pressed="${n === state.setup.chameleons}">${n} 隻</button>`)
+      .join('');
+    $('#chameleonHint').textContent = state.setup.chameleons === 2
+      ? '兩隻變色龍互相不知道對方是誰，其他人也只知道有兩隻。'
+      : `${state.config.twoChameleonsFrom} 人以上可以選兩隻，會更混亂更好玩。`;
+  }
+
   const picker = $('#topicPicker');
   picker.innerHTML = [
     `<button class="chip" data-topic="" aria-pressed="${state.setup.topicId === null}">🎲 隨機</button>`,
@@ -88,12 +107,16 @@ function renderSetup() {
 /* ── Host：產生一局 ─────────────────────────────────── */
 
 function newRound() {
-  const { players, topicId } = state.setup;
+  const { players, topicId, chameleons } = state.setup;
   const topic = topicId ? topicById(topicId) : state.topics[randInt(state.topics.length)];
+
+  const seats = new Set();
+  while (seats.size < Math.min(chameleons, players)) seats.add(randInt(players) + 1);
+
   state.round = {
     topicId: topic.id,
     wordIndex: randInt(16),
-    chameleonSeat: randInt(players) + 1,
+    chameleonSeats: [...seats].sort((a, b) => a - b),
     players,
     startSeat: randInt(players) + 1,
     nonce: Math.random().toString(36).slice(2, 8),
@@ -117,7 +140,10 @@ function showBoard() {
   const topic = topicById(state.round.topicId);
   $('#boardTitle').textContent = `${topic.emoji} ${topic.name}`;
   renderGrid($('#boardGrid'), topic, -1);
-  $('#startsWith').textContent = `由 ${state.round.startSeat} 號玩家開始說線索，然後依序輪流。`;
+  const n = chameleonCount();
+  $('#startsWith').textContent =
+    `由 ${state.round.startSeat} 號玩家開始說線索，然後依序輪流。` +
+    (n > 1 ? `　本局有 ${n} 隻變色龍。` : '');
   show('board');
 }
 
@@ -141,7 +167,8 @@ function renderSeatPicker() {
 function showRole() {
   const { seat, round } = state;
   const topic = topicById(round.topicId);
-  const isChameleon = seat === round.chameleonSeat;
+  const isChameleon = isChameleonSeat(seat);
+  const n = chameleonCount();
 
   $('#roleCard').innerHTML = isChameleon
     ? `<div class="role chameleon">
@@ -152,6 +179,7 @@ function showRole() {
            <li>你<b>不知道</b>秘密詞是哪一個。</li>
            <li>從別人的線索推測那個詞，同時<b>裝作你也知道</b>，講一個混得過去的線索。</li>
            <li>沒被投出來就贏；被抓到還有<b>一次猜詞機會</b>，猜中一樣算贏。</li>
+           ${n > 1 ? '<li>本局還有<b>另一隻變色龍</b>，但你不知道是誰 —— 別誤以為同伴就安全了。</li>' : ''}
          </ul>
          <div class="topic-tag">主題：${topic.emoji} ${topic.name}</div>
        </div>`
@@ -162,6 +190,7 @@ function showRole() {
          <ul>
            <li>等主持人公佈題目，找到 <b>${coordOf(round.wordIndex)}</b> 那格的詞，那就是秘密詞。</li>
            <li>講一個線索證明你知道，但<b>別講太明顯</b>，否則變色龍就猜到了。</li>
+           ${n > 1 ? `<li>本局有 <b>${n} 隻</b>變色龍，投票時記得。</li>` : ''}
          </ul>
          <div class="topic-tag">主題：${topic.emoji} ${topic.name}</div>
        </div>`;
@@ -172,7 +201,7 @@ function showRole() {
 function showPlayerBoard() {
   const { seat, round } = state;
   const topic = topicById(round.topicId);
-  const isChameleon = seat === round.chameleonSeat;
+  const isChameleon = isChameleonSeat(seat);
 
   $('#pbTitle').textContent = `${topic.emoji} ${topic.name}`;
   renderGrid($('#pbGrid'), topic, isChameleon ? -1 : round.wordIndex);
@@ -199,6 +228,10 @@ function wireEvents() {
 
     if (btn.dataset.count) {
       state.setup.players = +btn.dataset.count;
+      return renderSetup();
+    }
+    if (btn.dataset.cham) {
+      state.setup.chameleons = +btn.dataset.cham;
       return renderSetup();
     }
     if (btn.dataset.topic !== undefined) {

@@ -83,10 +83,12 @@ h2{font-size:1.35rem;margin:0 0 4px}
 .cell.mine{background:var(--accent);color:var(--accent-ink);border-color:transparent;box-shadow:0 0 0 3px rgba(74,222,128,.25)}
 
 /* seats */
-.seats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px}
+/* auto-fit：3 人時是 3 大格，16 人時自動排成 4 欄，不會爆版 */
+.seats{display:grid;grid-template-columns:repeat(auto-fit,minmax(74px,1fr));gap:12px;margin-top:8px}
 .seat{
   aspect-ratio:1;border:1px solid var(--line);border-radius:var(--radius);
-  background:var(--card);color:var(--fg);font:inherit;font-size:2rem;font-weight:700;cursor:pointer;
+  background:var(--card);color:var(--fg);font:inherit;
+  font-size:clamp(1.5rem,7vw,2.4rem);font-weight:700;cursor:pointer;
 }
 .seat:active{transform:scale(.96)}
 

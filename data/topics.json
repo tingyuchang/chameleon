@@ -2,9 +2,10 @@
   "version": 1,
   "config": {
     "minPlayers": 3,
-    "maxPlayers": 10
+    "maxPlayers": 16,
+    "twoChameleonsFrom": 9
   },
-  "note": "config 可調人數範圍；topics 每張主題卡固定 16 個詞，依序填入 4x4 格子（A1 B1 C1 D1 / A2 B2 C2 D2 / ...）。新增主題請給一個不重複的 id，且勿更動既有 id。",
+  "note": "config：minPlayers/maxPlayers 為人數範圍；twoChameleonsFrom 為「可選兩隻變色龍」的最低人數。topics 每張主題卡固定 16 個詞，依序填入 4x4 格子（A1 B1 C1 D1 / A2 B2 C2 D2 / ...）。新增主題請給一個不重複的 id，且勿更動既有 id。",
   "topics": [
     {
       "id": "night_market",
