@@ -118,3 +118,50 @@ h2{font-size:1.35rem;margin:0 0 4px}
 .prose b{color:var(--fg)}
 .prose ol{padding-left:20px}
 .prose li{margin:8px 0}
+
+/* ── 投影模式：主持人題目畫面滿版放大 ─────────────────
+   用 clamp() 讓手機 / 筆電 / 投影機都自動縮放到合適大小。 */
+
+body[data-screen="board"] #app{
+  max-width:none;
+  padding:clamp(12px,2vh,28px) clamp(12px,3vw,56px);
+  height:100dvh;
+}
+body[data-screen="board"] .screen[data-screen="board"]{min-height:0}
+
+#boardTitle{
+  font-size:clamp(1.4rem,3.6vw,3.4rem);
+  text-align:center;margin-bottom:clamp(8px,1.5vh,20px);
+}
+
+/* 表格吃掉所有剩餘高度 */
+body[data-screen="board"] .grid-wrap{flex:1;display:flex;min-height:0;overflow:visible}
+#boardGrid{
+  flex:1;min-width:0;margin:0;
+  gap:clamp(6px,1vw,16px);
+  /* minmax(0,1fr)：不讓長詞（例如「薩克斯風」）把欄位撐爆版面 */
+  grid-template-columns:auto repeat(4,minmax(0,1fr));
+  grid-template-rows:auto repeat(4,1fr);
+}
+#boardGrid .cell{
+  min-height:0;padding:4px;
+  border-radius:clamp(8px,1vw,20px);
+  font-size:clamp(.95rem,2.9vw,3rem);
+  line-height:1.15;
+}
+#boardGrid .cell.head{font-size:clamp(.7rem,1.5vw,1.5rem)}
+
+#startsWith{
+  font-size:clamp(.9rem,1.8vw,1.8rem);
+  text-align:center;margin:clamp(8px,1.5vh,20px) 0 0;
+}
+
+/* 按鈕橫排，不佔投影畫面 */
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:clamp(8px,1.5vh,20px)}
+.row .btn{margin-top:0;flex:1 1 120px;padding:12px;font-size:clamp(.85rem,1.2vw,1.1rem)}
+
+/* 橫向螢幕（投影機、筆電）字再放大一級 */
+@media (min-aspect-ratio:1/1) and (min-width:900px){
+  #boardGrid .cell{font-size:clamp(1.4rem,2.6vw,3.6rem)}
+  #boardTitle{font-size:clamp(2rem,3.2vw,4rem)}
+}

@@ -48,6 +48,7 @@ const topicById = (id) => state.topics.find((t) => t.id === id);
 
 function show(name) {
   $$('.screen').forEach((el) => { el.hidden = el.dataset.screen !== name; });
+  document.body.dataset.screen = name;   // 供 CSS 切換版型（例如題目畫面的投影模式）
   window.scrollTo(0, 0);
 }
 
@@ -216,11 +217,20 @@ function wireEvents() {
   $('#btnNextRound').onclick = newRound;
   $('#btnStart').onclick     = showBoard;
   $('#btnShowBoard').onclick = showPlayerBoard;
+  $('#btnFullscreen').onclick = toggleFullscreen;
   $('#btnReseat').onclick    = () => {
     try { localStorage.removeItem(seatKey()); } catch { /* ignore */ }
     state.seat = null;
     renderSeatPicker();
   };
+}
+
+function toggleFullscreen() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  } else {
+    document.documentElement.requestFullscreen?.().catch(() => {});
+  }
 }
 
 /* ── 進入點 ─────────────────────────────────────────── */

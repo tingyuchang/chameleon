@@ -65,14 +65,16 @@
     <button class="btn btn-ghost" data-go="setup">← 改設定</button>
   </section>
 
-  <!-- ══ Host：題目 ══ -->
+  <!-- ══ Host：題目（投影用，滿版） ══ -->
   <section class="screen" data-screen="board" hidden>
     <h2 id="boardTitle">主題</h2>
     <div class="grid-wrap"><div class="grid" id="boardGrid"></div></div>
     <p class="hint" id="startsWith"></p>
-    <div class="spacer"></div>
-    <button class="btn btn-primary btn-lg" id="btnNextRound">下一局</button>
-    <button class="btn btn-ghost" data-go="home">結束遊戲</button>
+    <div class="row">
+      <button class="btn btn-primary" id="btnNextRound">下一局</button>
+      <button class="btn btn-ghost" id="btnFullscreen">全螢幕</button>
+      <button class="btn btn-ghost" data-go="home">結束遊戲</button>
+    </div>
   </section>
 
   <!-- ══ 玩家：選座位 ══ -->
