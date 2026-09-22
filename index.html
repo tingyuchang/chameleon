@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14171f">
+<title>抓包變色龍</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<main id="app">
+
+  <!-- ══ 首頁 ══ -->
+  <section class="screen" data-screen="home">
+    <div class="hero">
+      <div class="hero-emoji">🦎</div>
+      <h1>抓包變色龍</h1>
+      <p class="sub">The Chameleon · 繁中版</p>
+    </div>
+    <button class="btn btn-primary btn-lg" data-go="setup">開新遊戲</button>
+    <button class="btn btn-ghost" data-go="rules">遊戲規則</button>
+  </section>
+
+  <!-- ══ 規則 ══ -->
+  <section class="screen" data-screen="rules" hidden>
+    <h2>遊戲規則</h2>
+    <div class="prose">
+      <p>桌上會公佈一張<b>主題卡</b>（16 個詞排成 4×4）。除了一位<b>變色龍</b>之外，所有人都知道其中一個<b>秘密詞</b>。</p>
+      <ol>
+        <li>輪流每人講<b>一個詞</b>當線索，要讓大家覺得你知道秘密詞，又不能明顯到讓變色龍猜出來。</li>
+        <li>全部講完後自由討論。</li>
+        <li><b>同時</b>投票指認誰是變色龍。</li>
+        <li>投錯 → 變色龍獲勝。抓到 → 變色龍有一次猜秘密詞的機會，猜中還是變色龍贏。</li>
+      </ol>
+      <p class="muted">本網站只負責發身分與公佈題目，投票與勝負請大家口頭進行。</p>
+    </div>
+    <button class="btn btn-ghost" data-go="home">← 返回</button>
+  </section>
+
+  <!-- ══ Host：設定 ══ -->
+  <section class="screen" data-screen="setup" hidden>
+    <h2>遊戲設定</h2>
+
+    <label class="field-label">玩家人數</label>
+    <div class="chips" id="playerCount"></div>
+
+    <label class="field-label">主題類別</label>
+    <div class="chips chips-wrap" id="topicPicker"></div>
+
+    <div class="spacer"></div>
+    <button class="btn btn-primary btn-lg" id="btnGenerate">生成身份</button>
+    <button class="btn btn-ghost" data-go="home">← 返回</button>
+  </section>
+
+  <!-- ══ Host：QR ══ -->
+  <section class="screen" data-screen="qr" hidden>
+    <h2>請大家掃描</h2>
+    <p class="hint">共 <b id="qrCount">6</b> 位玩家，掃描後各自點選自己的座位號</p>
+    <div class="qr-frame"><div id="qrBox"></div></div>
+    <p class="qr-url" id="qrUrl"></p>
+    <div class="spacer"></div>
+    <button class="btn btn-primary btn-lg" id="btnStart">大家都掃完了，開始遊戲</button>
+    <button class="btn btn-ghost" id="btnRegen">重新生成身份</button>
+    <button class="btn btn-ghost" data-go="setup">← 改設定</button>
+  </section>
+
+  <!-- ══ Host：題目 ══ -->
+  <section class="screen" data-screen="board" hidden>
+    <h2 id="boardTitle">主題</h2>
+    <div class="grid-wrap"><div class="grid" id="boardGrid"></div></div>
+    <p class="hint" id="startsWith"></p>
+    <div class="spacer"></div>
+    <button class="btn btn-primary btn-lg" id="btnNextRound">下一局</button>
+    <button class="btn btn-ghost" data-go="home">結束遊戲</button>
+  </section>
+
+  <!-- ══ 玩家：選座位 ══ -->
+  <section class="screen" data-screen="seat" hidden>
+    <h2>你是幾號玩家？</h2>
+    <p class="hint">和其他人確認一下，每人選不同的號碼</p>
+    <div class="seats" id="seatPicker"></div>
+  </section>
+
+  <!-- ══ 玩家：身分 ══ -->
+  <section class="screen" data-screen="role" hidden>
+    <div id="roleCard"></div>
+    <button class="btn btn-ghost" id="btnShowBoard">查看題目</button>
+    <button class="btn btn-ghost btn-sm" id="btnReseat">我選錯號碼了</button>
+  </section>
+
+  <!-- ══ 玩家：題目 ══ -->
+  <section class="screen" data-screen="playerBoard" hidden>
+    <h2 id="pbTitle">主題</h2>
+    <div class="grid-wrap"><div class="grid" id="pbGrid"></div></div>
+    <p class="hint" id="pbHint"></p>
+    <button class="btn btn-ghost" data-go="role">← 返回我的身分</button>
+  </section>
+
+  <!-- ══ 錯誤 ══ -->
+  <section class="screen" data-screen="error" hidden>
+    <h2>無法讀取這局</h2>
+    <p class="hint" id="errMsg">連結可能不完整，請主持人重新產生 QR Code。</p>
+    <button class="btn btn-ghost" data-go="home">回首頁</button>
+  </section>
+
+</main>
+
+<script src="js/qrcode.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
