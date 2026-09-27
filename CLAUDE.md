@@ -38,6 +38,9 @@ base64url 編碼放在 `#` 之後。**改動時的鐵律**：
 "config": { "minPlayers": 3, "maxPlayers": 16, "twoChameleonsFrom": 9 }
 ```
 
+主題是巢狀的 `groups[].topics[]`（分類只影響設定畫面的折疊顯示，payload 只記 `topicId`，
+所以主題換分類不影響舊 QR）。程式載入時攤平成 `state.topics`。
+
 每張主題卡固定 16 個詞，依序對應 4×4 格子（`A1 B1 C1 D1` / `A2 B2 C2 D2` / …）。
 
 ## 投影模式

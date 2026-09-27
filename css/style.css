@@ -167,3 +167,9 @@ body[data-screen="board"] .grid-wrap{flex:1;display:flex;min-height:0;overflow:v
   #boardGrid .cell{font-size:clamp(1.4rem,2.6vw,3.6rem)}
   #boardTitle{font-size:clamp(2rem,3.2vw,4rem)}
 }
+
+/* 主題分類（可折疊） */
+.topic-group{margin-top:8px;border:1px solid var(--line);border-radius:12px;padding:0 12px}
+.topic-group summary{padding:12px 0;cursor:pointer;font-weight:600}
+.topic-group summary .count{margin-left:8px;color:var(--muted);font-weight:400;font-size:.85rem}
+.topic-group .chips{padding-bottom:12px}

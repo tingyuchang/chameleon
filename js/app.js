@@ -39,7 +39,8 @@ function decodeRound(hash) {
 /* ── 狀態 ───────────────────────────────────────────── */
 
 const state = {
-  topics: [],
+  groups: [],
+  topics: [],   // groups 攤平，供 topicById / 隨機抽
   config: { minPlayers: 3, maxPlayers: 8, twoChameleonsFrom: 9 },  // 會被 topics.json 的 config 覆寫
   round: null,        // 目前這一局
   setup: { players: 6, topicId: null, chameleons: 1 },  // topicId = null 代表隨機
@@ -96,11 +97,20 @@ function renderSetup() {
       : `${state.config.twoChameleonsFrom} 人以上可以選兩隻，會更混亂更好玩。`;
   }
 
+  // 分類用 <details> 折疊；重畫時保留使用者展開過的，並自動展開已選主題所在的分類
   const picker = $('#topicPicker');
+  const opened = new Set([...picker.querySelectorAll('details[open]')].map((d) => d.dataset.group));
+  const chip = (t) =>
+    `<button class="chip" data-topic="${t.id}" aria-pressed="${state.setup.topicId === t.id}">${t.emoji} ${t.name}</button>`;
   picker.innerHTML = [
-    `<button class="chip" data-topic="" aria-pressed="${state.setup.topicId === null}">🎲 隨機</button>`,
-    ...state.topics.map((t) =>
-      `<button class="chip" data-topic="${t.id}" aria-pressed="${state.setup.topicId === t.id}">${t.emoji} ${t.name}</button>`),
+    `<div class="chips"><button class="chip" data-topic="" aria-pressed="${state.setup.topicId === null}">🎲 全部隨機</button></div>`,
+    ...state.groups.map((g) => {
+      const open = opened.has(g.name) || g.topics.some((t) => t.id === state.setup.topicId);
+      return `<details class="topic-group" data-group="${g.name}"${open ? ' open' : ''}>
+        <summary>${g.emoji} ${g.name}<span class="count">${g.topics.length}</span></summary>
+        <div class="chips chips-wrap">${g.topics.map(chip).join('')}</div>
+      </details>`;
+    }),
   ].join('');
 }
 
@@ -273,7 +283,8 @@ async function main() {
 
   try {
     const data = await (await fetch('data/topics.json', { cache: 'no-cache' })).json();
-    state.topics = data.topics;
+    state.groups = data.groups;
+    state.topics = data.groups.flatMap((g) => g.topics);
     Object.assign(state.config, data.config || {});
     state.setup.players = Math.min(Math.max(6, state.config.minPlayers), state.config.maxPlayers);
   } catch {
